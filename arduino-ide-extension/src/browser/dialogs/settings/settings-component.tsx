@@ -16,7 +16,7 @@ import {
   ProxySettings,
 } from '../../../common/protocol';
 import { nls } from '@theia/core/lib/common';
-import { Settings, SettingsService } from './settings';
+import { Settings, SettingsService, AiProviderType } from './settings';
 import { AdditionalUrlsDialog } from './settings-dialog';
 import {
   AsyncLocalizationProvider,
@@ -103,9 +103,11 @@ export class SettingsComponent extends React.Component<
         <TabList>
           <Tab>{nls.localize('vscode/settingsTree/settings', 'Settings')}</Tab>
           <Tab>{nls.localize('arduino/preferences/network', 'Network')}</Tab>
+          <Tab>{'AI Assistant'}</Tab>
         </TabList>
         <TabPanel>{this.renderSettings()}</TabPanel>
         <TabPanel>{this.renderNetwork()}</TabPanel>
+        <TabPanel>{this.renderAiAssistant()}</TabPanel>
       </Tabs>
     );
   }
@@ -390,6 +392,129 @@ export class SettingsComponent extends React.Component<
       <option key={key} value={value}>
         {label}
       </option>
+    );
+  }
+
+  protected renderAiAssistant(): React.ReactNode {
+    const provider = this.state.aiProvider || 'github-models';
+
+    const providerInfo: Record<string, { tokenLabel: string; help: string; placeholder: string }> = {
+      'github-models': {
+        tokenLabel: 'GitHub Personal Access Token',
+        help: 'Generate a token at github.com → Settings → Developer settings → Personal access tokens → Tokens (classic). No special scopes are required for GitHub Models.',
+        placeholder: 'ghp_xxxxxxxxxxxxxxxxxxxx',
+      },
+      openai: {
+        tokenLabel: 'OpenAI API Key',
+        help: 'Get your API key at platform.openai.com → API keys. You need a paid account with credits.',
+        placeholder: 'sk-xxxxxxxxxxxxxxxxxxxxxxxx',
+      },
+      anthropic: {
+        tokenLabel: 'Anthropic API Key',
+        help: 'Get your API key at console.anthropic.com → API Keys. Requires a funded account.',
+        placeholder: 'sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx',
+      },
+      ollama: {
+        tokenLabel: 'Server URL',
+        help: 'Install Ollama from ollama.com, then run: ollama pull llama3.1. The server starts automatically on localhost:11434.',
+        placeholder: 'http://localhost:11434/v1',
+      },
+    };
+
+    const info = providerInfo[provider] || providerInfo['github-models'];
+    const hasKey = provider === 'ollama' || !!this.state.aiGithubToken || !!this.state.aiOpenaiKey || !!this.state.aiAnthropicKey;
+    const providerLabel = provider === 'github-models' ? 'GitHub Models' : provider === 'openai' ? 'OpenAI' : provider === 'anthropic' ? 'Anthropic' : 'Ollama';
+
+    return (
+      <div className="content noselect">
+        <div style={{ marginBottom: '16px' }}>
+          <span style={{ fontWeight: 600 }}>{'AI Provider'}</span>
+          <div style={{ fontSize: '0.85em', opacity: 0.65, marginBottom: '6px' }}>
+            {'Choose which AI service powers the assistant. You can switch models from the chat panel.'}
+          </div>
+          <div className="flex-line">
+            <select
+              className="theia-select"
+              value={provider}
+              onChange={(e) =>
+                this.setState({
+                  aiProvider: e.target.value as AiProviderType,
+                })
+              }
+            >
+              <option value="github-models">GitHub Models (free)</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="ollama">Ollama (local, free)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <span style={{ fontWeight: 600 }}>{info.tokenLabel}</span>
+          <div style={{ fontSize: '0.85em', opacity: 0.65, marginBottom: '6px', lineHeight: '1.5' }}>
+            {info.help}
+          </div>
+          <div className="flex-line">
+            {provider === 'ollama' ? (
+              <input
+                className="theia-input stretch"
+                type="text"
+                value={this.state.aiOllamaUrl || 'http://localhost:11434/v1'}
+                placeholder={info.placeholder}
+                onChange={(e) =>
+                  this.setState({ aiOllamaUrl: e.target.value })
+                }
+              />
+            ) : provider === 'github-models' ? (
+              <input
+                className="theia-input stretch"
+                type="password"
+                value={this.state.aiGithubToken || ''}
+                placeholder={info.placeholder}
+                onChange={(e) =>
+                  this.setState({ aiGithubToken: e.target.value })
+                }
+              />
+            ) : provider === 'openai' ? (
+              <input
+                className="theia-input stretch"
+                type="password"
+                value={this.state.aiOpenaiKey || ''}
+                placeholder={info.placeholder}
+                onChange={(e) =>
+                  this.setState({ aiOpenaiKey: e.target.value })
+                }
+              />
+            ) : (
+              <input
+                className="theia-input stretch"
+                type="password"
+                value={this.state.aiAnthropicKey || ''}
+                placeholder={info.placeholder}
+                onChange={(e) =>
+                  this.setState({ aiAnthropicKey: e.target.value })
+                }
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Status indicator */}
+        <div style={{
+          padding: '10px 12px',
+          borderRadius: '6px',
+          fontSize: '0.85em',
+          lineHeight: '1.5',
+          background: hasKey ? 'rgba(0, 180, 80, 0.1)' : 'rgba(255, 180, 0, 0.1)',
+          border: hasKey ? '1px solid rgba(0, 180, 80, 0.3)' : '1px solid rgba(255, 180, 0, 0.3)',
+        }}>
+          {hasKey
+            ? `✓ Connected to ${providerLabel}. Select a model from the AI Assistant chat panel.`
+            : `⚠ No API key configured. Enter your ${info.tokenLabel} above to enable the AI Assistant.`
+          }
+        </div>
+      </div>
     );
   }
 

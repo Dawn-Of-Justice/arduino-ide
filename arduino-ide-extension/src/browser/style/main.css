@@ -47,7 +47,10 @@
     > div.toggle-serial-monitor,
 .p-TabBar-toolbar
     .item.arduino-tool-item.enabled:hover
-    > div.toggle-serial-plotter {
+    > div.toggle-serial-plotter,
+.p-TabBar-toolbar
+    .item.arduino-tool-item.enabled:hover
+    > div.toggle-ai-assistant {
     background-color: var(
         --theia-arduino-toolbar-button-secondary-hoverBackground
     );
@@ -93,6 +96,11 @@
 
 .toggle-serial-plotter-icon {
     -webkit-mask: url(../icons/plotter.svg) center no-repeat;
+    background-color: var(--theia-arduino-toolbar-button-secondary-label);
+}
+
+.toggle-ai-assistant-icon {
+    -webkit-mask: url(../icons/ai-assistant.svg) center no-repeat;
     background-color: var(--theia-arduino-toolbar-button-secondary-label);
 }
 

@@ -39,6 +39,7 @@ import { TerminalMenus } from '@theia/terminal/lib/browser/terminal-frontend-con
 import { BoardsServiceProvider } from './boards/boards-service-provider';
 import { BoardsToolBarItem } from './boards/boards-toolbar-item';
 import { ArduinoMenus } from './menu/arduino-menus';
+import { AiAssistantViewContribution } from './ai-assistant/ai-assistant-view-contribution';
 import { MonitorViewContribution } from './serial/monitor/monitor-view-contribution';
 import { SerialPlotterContribution } from './serial/plotter/plotter-frontend-contribution';
 import { ArduinoToolbar } from './toolbar/arduino-toolbar';
@@ -128,6 +129,11 @@ export class ArduinoFrontendContribution
       id: 'toggle-serial-monitor',
       command: MonitorViewContribution.TOGGLE_SERIAL_MONITOR_TOOLBAR,
       tooltip: nls.localize('arduino/common/serialMonitor', 'Serial Monitor'),
+    });
+    registry.registerItem({
+      id: 'toggle-ai-assistant',
+      command: AiAssistantViewContribution.TOGGLE_AI_ASSISTANT_TOOLBAR,
+      tooltip: 'AI Assistant',
     });
   }
 

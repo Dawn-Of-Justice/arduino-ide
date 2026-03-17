@@ -1,4 +1,5 @@
 import '../../src/browser/style/index.css';
+import '../../src/browser/ai-assistant/style/ai-assistant.css';
 import { Container, ContainerModule } from '@theia/core/shared/inversify';
 import { WidgetFactory } from '@theia/core/lib/browser/widget-manager';
 import { CommandContribution } from '@theia/core/lib/common/command';
@@ -370,6 +371,14 @@ import { DebugToolBar } from '@theia/debug/lib/browser/view/debug-toolbar-widget
 
 import { TestViewContribution as TheiaTestViewContribution } from '@theia/test/lib/browser/view/test-view-contribution';
 import { TestViewContribution } from './theia/test/test-view-contribution';
+import { AiAssistantWidget } from './ai-assistant/ai-assistant-widget';
+import { AiAssistantViewContribution } from './ai-assistant/ai-assistant-view-contribution';
+import { AiAssistantClientImpl } from './ai-assistant/ai-assistant-client-impl';
+import {
+  AiAssistantService,
+  AiAssistantServicePath,
+} from '../common/protocol/ai-assistant-service';
+import { bindAiAssistantPreferences } from './ai-assistant/ai-assistant-preferences';
 
 // Hack to fix copy/cut/paste issue after electron version update in Theia.
 // https://github.com/eclipse-theia/theia/issues/12487
@@ -900,6 +909,7 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
 
   // Preferences
   bindArduinoPreferences(bind);
+  // (AI Assistant preferences bound below)
 
   // Settings wrapper for the preferences and the CLI config.
   bind(SettingsService).toSelf().inSingletonScope();
@@ -1070,4 +1080,26 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
   // Hides the Test Explorer from the side-bar
   bind(TestViewContribution).toSelf().inSingletonScope();
   rebind(TheiaTestViewContribution).toService(TestViewContribution);
+
+  // ---------- AI Assistant ----------
+  bindAiAssistantPreferences(bind);
+  bind(AiAssistantClientImpl).toSelf().inSingletonScope();
+  bind(AiAssistantService)
+    .toDynamicValue((context) =>
+      WebSocketConnectionProvider.createProxy(
+        context.container,
+        AiAssistantServicePath,
+        context.container.get(AiAssistantClientImpl)
+      )
+    )
+    .inSingletonScope();
+  bind(AiAssistantWidget).toSelf();
+  bindViewContribution(bind, AiAssistantViewContribution);
+  bind(FrontendApplicationContribution).toService(AiAssistantViewContribution);
+  bind(WidgetFactory)
+    .toDynamicValue((ctx) => ({
+      id: AiAssistantWidget.ID,
+      createWidget: () => ctx.container.get(AiAssistantWidget),
+    }))
+    .inSingletonScope();
 });

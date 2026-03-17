@@ -46,6 +46,15 @@ export const COMPILE_WARNINGS_SETTING = `${COMPILE_SETTING}.warnings`;
 export const UPLOAD_VERBOSE_SETTING = `${UPLOAD_SETTING}.verbose`;
 export const UPLOAD_VERIFY_SETTING = `${UPLOAD_SETTING}.verify`;
 export const SHOW_ALL_FILES_SETTING = `${SKETCHBOOK_SETTING}.showAllFiles`;
+export const AI_SETTING = `${ARDUINO_SETTING}.ai`;
+export const AI_PROVIDER_SETTING = `${AI_SETTING}.provider`;
+export const AI_GITHUB_TOKEN_SETTING = `${AI_SETTING}.githubToken`;
+export const AI_OPENAI_KEY_SETTING = `${AI_SETTING}.openaiKey`;
+export const AI_ANTHROPIC_KEY_SETTING = `${AI_SETTING}.anthropicKey`;
+export const AI_OLLAMA_URL_SETTING = `${AI_SETTING}.ollamaUrl`;
+export const AI_MODEL_SETTING = `${AI_SETTING}.model`;
+
+export type AiProviderType = 'github-models' | 'openai' | 'anthropic' | 'ollama';
 
 export interface Settings {
   editorFontSize: number; // `editor.fontSize`
@@ -67,6 +76,14 @@ export interface Settings {
   sketchbookPath: string; // CLI
   additionalUrls: AdditionalUrls; // CLI
   network: Network; // CLI
+
+  // AI Assistant settings
+  aiProvider: AiProviderType;
+  aiGithubToken: string;
+  aiOpenaiKey: string;
+  aiAnthropicKey: string;
+  aiOllamaUrl: string;
+  aiModel: string;
 }
 export namespace Settings {
   export function belongsToCli<K extends keyof Settings>(key: K): boolean {
@@ -153,6 +170,12 @@ export class SettingsService {
       verifyAfterUpload,
       sketchbookShowAllFiles,
       cliConfig,
+      aiProvider,
+      aiGithubToken,
+      aiOpenaiKey,
+      aiAnthropicKey,
+      aiOllamaUrl,
+      aiModel,
     ] = await Promise.all([
       ['en', ...(await this.localizationProvider.getAvailableLanguages())],
       this.localizationProvider.getCurrentLanguage(),
@@ -182,6 +205,12 @@ export class SettingsService {
       this.preferenceService.get<boolean>(UPLOAD_VERIFY_SETTING, true),
       this.preferenceService.get<boolean>(SHOW_ALL_FILES_SETTING, false),
       this.configService.getConfiguration(),
+      this.preferenceService.get<AiProviderType>(AI_PROVIDER_SETTING, 'github-models'),
+      this.preferenceService.get<string>(AI_GITHUB_TOKEN_SETTING, ''),
+      this.preferenceService.get<string>(AI_OPENAI_KEY_SETTING, ''),
+      this.preferenceService.get<string>(AI_ANTHROPIC_KEY_SETTING, ''),
+      this.preferenceService.get<string>(AI_OLLAMA_URL_SETTING, 'http://localhost:11434/v1'),
+      this.preferenceService.get<string>(AI_MODEL_SETTING, 'gpt-4o'),
     ]);
     const {
       config = {
@@ -210,6 +239,12 @@ export class SettingsService {
       additionalUrls,
       sketchbookPath,
       network,
+      aiProvider,
+      aiGithubToken,
+      aiOpenaiKey,
+      aiAnthropicKey,
+      aiOllamaUrl,
+      aiModel,
     };
   }
 
@@ -297,6 +332,12 @@ export class SettingsService {
       additionalUrls,
       network,
       sketchbookShowAllFiles,
+      aiProvider,
+      aiGithubToken,
+      aiOpenaiKey,
+      aiAnthropicKey,
+      aiOllamaUrl,
+      aiModel,
     } = this._settings;
     const [cliConfig, sketchDirUri] = await Promise.all([
       this.configService.getConfiguration(),
@@ -328,6 +369,12 @@ export class SettingsService {
       this.savePreference(UPLOAD_VERBOSE_SETTING, verboseOnUpload),
       this.savePreference(UPLOAD_VERIFY_SETTING, verifyAfterUpload),
       this.savePreference(SHOW_ALL_FILES_SETTING, sketchbookShowAllFiles),
+      this.savePreference(AI_PROVIDER_SETTING, aiProvider),
+      this.savePreference(AI_GITHUB_TOKEN_SETTING, aiGithubToken),
+      this.savePreference(AI_OPENAI_KEY_SETTING, aiOpenaiKey),
+      this.savePreference(AI_ANTHROPIC_KEY_SETTING, aiAnthropicKey),
+      this.savePreference(AI_OLLAMA_URL_SETTING, aiOllamaUrl),
+      this.savePreference(AI_MODEL_SETTING, aiModel),
       this.configService.setConfiguration(config),
     ]);
     this.onDidChangeEmitter.fire(this._settings);

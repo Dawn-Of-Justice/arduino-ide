@@ -121,6 +121,12 @@ import {
 import { SettingsReader } from './settings-reader';
 import { VsCodePluginScanner } from './theia/plugin-ext-vscode/scanner-vscode';
 import { rebindParcelFileSystemWatcher } from './theia/filesystem/parcel-bindings';
+import { AiAssistantServiceImpl } from './ai-assistant-service-impl';
+import {
+  AiAssistantService,
+  AiAssistantClient,
+  AiAssistantServicePath,
+} from '../common/protocol/ai-assistant-service';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
   bind(BackendApplication).toSelf().inSingletonScope();
@@ -399,6 +405,27 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
   // https://github.com/eclipse-theia/theia/issues/14309
   bind(VsCodePluginScanner).toSelf().inSingletonScope();
   rebind(PluginScanner).toService(VsCodePluginScanner);
+
+  // ---------- AI Assistant ----------
+  bind(AiAssistantServiceImpl).toSelf().inSingletonScope();
+  bind(AiAssistantService).toService(AiAssistantServiceImpl);
+  bind(ConnectionHandler)
+    .toDynamicValue(
+      (context) =>
+        new JsonRpcConnectionHandler<AiAssistantClient>(
+          AiAssistantServicePath,
+          (client) => {
+            const server =
+              context.container.get<AiAssistantServiceImpl>(
+                AiAssistantServiceImpl
+              );
+            server.setClient(client);
+            client.onDidCloseConnection(() => server.disposeClient(client));
+            return server;
+          }
+        )
+    )
+    .inSingletonScope();
 });
 
 function bindChildLogger(bind: interfaces.Bind, name: string): void {
