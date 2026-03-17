@@ -77,7 +77,11 @@
       "Bash(where nvm:*)",
       "Bash(npx node-gyp:*)",
       "Bash(grep -r \"devServer\\\\|port\\\\|listen\\\\|host\" C:/Users/salos/OneDrive/Desktop/arduino-ide/electron-app/ --include=*.js --include=*.ts --include=*.json -n)",
-      "WebFetch(domain:code.visualstudio.com)"
+      "WebFetch(domain:code.visualstudio.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s \"https://api.github.com/search/code?q=chatInputPart+extension:css+repo:microsoft/vscode&per_page=5\")",
+      "WebFetch(domain:gist.github.com)"
     ]
   }
 }

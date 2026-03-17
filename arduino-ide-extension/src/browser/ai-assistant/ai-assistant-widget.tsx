@@ -27,11 +27,8 @@ import {
 import { PreferenceService } from '@theia/core/lib/browser/preferences';
 import { AiAssistantClientImpl } from './ai-assistant-client-impl';
 
-/**
- * Minimal markdown → React elements renderer.
- * Handles fenced code blocks, inline code, bold, italic, lists, and paragraphs.
- * Pure React/CJS — no external markdown library needed.
- */
+// ─── Markdown renderer ─────────────────────────────────────────────────────
+
 function MarkdownContent({ children, className }: { children: string; className?: string }): React.ReactElement {
   const lines = children.split('\n');
   const elements: React.ReactElement[] = [];
@@ -42,7 +39,6 @@ function MarkdownContent({ children, className }: { children: string; className?
   while (i < lines.length) {
     const line = lines[i];
 
-    // Fenced code block
     if (line.startsWith('```')) {
       const lang = line.slice(3).trim();
       const codeLines: string[] = [];
@@ -58,11 +54,10 @@ function MarkdownContent({ children, className }: { children: string; className?
           </code>
         </pre>
       );
-      i++; // skip closing ```
+      i++;
       continue;
     }
 
-    // Unordered list item
     if (/^[-*+]\s/.test(line)) {
       const items: string[] = [];
       while (i < lines.length && /^[-*+]\s/.test(lines[i])) {
@@ -79,7 +74,6 @@ function MarkdownContent({ children, className }: { children: string; className?
       continue;
     }
 
-    // Ordered list item
     if (/^\d+\.\s/.test(line)) {
       const items: string[] = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
@@ -96,7 +90,6 @@ function MarkdownContent({ children, className }: { children: string; className?
       continue;
     }
 
-    // Headings
     const headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
     if (headingMatch) {
       const level = headingMatch[1].length as 1 | 2 | 3;
@@ -107,13 +100,11 @@ function MarkdownContent({ children, className }: { children: string; className?
       continue;
     }
 
-    // Blank line — skip
     if (line.trim() === '') {
       i++;
       continue;
     }
 
-    // Paragraph
     const paraLines: string[] = [];
     while (i < lines.length && lines[i].trim() !== '' && !lines[i].startsWith('```') && !/^[-*+]\s/.test(lines[i]) && !/^\d+\.\s/.test(lines[i])) {
       paraLines.push(lines[i]);
@@ -127,10 +118,8 @@ function MarkdownContent({ children, className }: { children: string; className?
   return <div className={className}>{elements}</div>;
 }
 
-/** Convert inline markdown (bold, italic, inline code) to React nodes */
 function renderInline(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
-  // Split on inline code, bold, italic in one pass
   const re = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
   let last = 0;
   let match: RegExpExecArray | null;
@@ -155,6 +144,34 @@ function renderInline(text: string): React.ReactNode {
   return parts.length === 1 ? parts[0] : parts;
 }
 
+// ─── SVG Icons ──────────────────────────────────────────────────────────────
+
+function SendIcon(): React.ReactElement {
+  return (
+    <svg className="ai-assistant-send-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.724 1.053a.5.5 0 0 1 .54-.068l12 6a.5.5 0 0 1 0 .894l-12 6A.5.5 0 0 1 1.5 13.5V9l7-1-7-1V2.5a.5.5 0 0 1 .224-.447z" />
+    </svg>
+  );
+}
+
+function StopIcon(): React.ReactElement {
+  return (
+    <svg className="ai-assistant-send-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="10" height="10" rx="1" />
+    </svg>
+  );
+}
+
+function NewChatIcon(): React.ReactElement {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+      <path d="M8 1v6H2v1h6v6h1V8h6V7H9V1z" opacity="0.9" />
+    </svg>
+  );
+}
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -162,10 +179,39 @@ interface ChatMessage {
   timestamp: number;
 }
 
+type ChatMode = 'agent' | 'ask' | 'plan';
+
+const MODE_LABELS: Record<ChatMode, { icon: string; label: string; placeholder: string }> = {
+  agent: {
+    icon: '⚡',
+    label: 'Agent',
+    placeholder: 'Ask anything, write code, fix errors, install libraries…',
+  },
+  ask: {
+    icon: '💬',
+    label: 'Ask',
+    placeholder: 'Ask a question about your code or project…',
+  },
+  plan: {
+    icon: '📋',
+    label: 'Plan',
+    placeholder: 'Describe a goal to plan implementation steps…',
+  },
+};
+
+const PROVIDER_MODELS: Record<string, string[]> = {
+  'github-models': ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o3-mini', 'DeepSeek-R1'],
+  'openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o3-mini', 'o4-mini'],
+  'anthropic': ['claude-sonnet-4-5-20250514', 'claude-haiku-4-5-20251001', 'claude-sonnet-4-20250514'],
+  'ollama': ['llama3.1', 'codellama', 'deepseek-coder-v2', 'qwen2.5-coder'],
+};
+
+// ─── Widget ─────────────────────────────────────────────────────────────────
+
 @injectable()
 export class AiAssistantWidget extends ReactWidget {
   static readonly ID = 'ai-assistant';
-  static readonly LABEL = 'AI Assistant';
+  static readonly LABEL = 'Arduino AI Assistant';
 
   @inject(AiAssistantService)
   private readonly aiService: JsonRpcProxy<AiAssistantService>;
@@ -195,7 +241,7 @@ export class AiAssistantWidget extends ReactWidget {
   private currentSessionId = '';
   private inputValue = '';
   private lastCompilerErrorText = '';
-  private currentMode: 'agent' | 'ask' | 'plan' = 'agent';
+  private currentMode: ChatMode = 'agent';
 
   private readonly toDisposeOnWidget = new DisposableCollection();
   private updateScheduled = false;
@@ -212,7 +258,6 @@ export class AiAssistantWidget extends ReactWidget {
 
   @postConstruct()
   protected init(): void {
-    console.log('[AiAssistant] postConstruct init called');
     this.toDispose.push(
       this.aiClient.onDidReceiveStreamChunk((chunk) =>
         this.handleChunk(chunk)
@@ -223,13 +268,11 @@ export class AiAssistantWidget extends ReactWidget {
 
   protected override onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-    console.log('[AiAssistant] onAfterAttach — forcing update');
     this.update();
   }
 
   protected override onAfterShow(msg: Message): void {
     super.onAfterShow(msg);
-    console.log('[AiAssistant] onAfterShow — forcing update');
     this.update();
   }
 
@@ -243,12 +286,10 @@ export class AiAssistantWidget extends ReactWidget {
     super.onCloseRequest(msg);
   }
 
-  /** Called by the view contribution to pass in fresh compiler errors */
   setLastCompilerErrors(text: string): void {
     this.lastCompilerErrorText = text;
   }
 
-  /** Called by the view contribution when verify completes after AI requested it */
   reportVerifyResult(errors: string): void {
     if (!this.isStreaming) return;
     void this.continueWithVerifyResult(errors);
@@ -261,9 +302,7 @@ export class AiAssistantWidget extends ReactWidget {
     await this.doSendMessage(resultMessage);
   }
 
-  private scrollToBottom(): void {
-    this.messagesEndRef?.scrollIntoView({ behavior: 'smooth' });
-  }
+  // ─── Chunk handler ──────────────────────────────────────────────────────
 
   private handleChunk(chunk: AiStreamChunk): void {
     if (chunk.sessionId !== this.currentSessionId) return;
@@ -273,7 +312,7 @@ export class AiAssistantWidget extends ReactWidget {
         this.streamingText += chunk.content;
         break;
       case 'tool_start':
-        this.toolCallText = `⚙️ *Using tool: ${chunk.toolName}…*`;
+        this.toolCallText = chunk.toolName ?? '';
         break;
       case 'tool_result':
         this.toolCallText = '';
@@ -301,7 +340,6 @@ export class AiAssistantWidget extends ReactWidget {
         this.isStreaming = false;
         break;
       case 'sketch_updated': {
-        // Reload the active editor to reflect backend write
         const activeEditor = this.editorManager.currentEditor;
         if (activeEditor) {
           void activeEditor.editor.document.revert?.();
@@ -309,7 +347,6 @@ export class AiAssistantWidget extends ReactWidget {
         break;
       }
       case 'verify_request':
-        // Handled by view contribution listening to this event
         break;
     }
     this.scheduleUpdate();
@@ -321,10 +358,15 @@ export class AiAssistantWidget extends ReactWidget {
     requestAnimationFrame(() => {
       this.updateScheduled = false;
       this.update();
-      // Scroll after React reconciles
       requestAnimationFrame(() => this.scrollToBottom());
     });
   }
+
+  private scrollToBottom(): void {
+    this.messagesEndRef?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ─── Context & API key ──────────────────────────────────────────────────
 
   private async gatherContext(): Promise<AiSketchContext> {
     let sketchContent = '';
@@ -335,7 +377,6 @@ export class AiAssistantWidget extends ReactWidget {
     if (CurrentSketch.isValid(sketch)) {
       sketchName = sketch.name;
       sketchMainFilePath = sketch.mainFileUri;
-      // Get live editor content (includes unsaved changes)
       for (const editor of this.editorManager.all) {
         if (editor.editor.uri.toString() === sketch.mainFileUri) {
           sketchContent = editor.editor.document.getText();
@@ -383,12 +424,12 @@ export class AiAssistantWidget extends ReactWidget {
     return !!this.getApiKey();
   }
 
-  /** Build the history array from the current messages list for multi-turn context. */
   private buildHistory(): AiHistoryMessage[] {
-    // Keep last 20 turns (10 exchanges) to stay within token budgets
     const recent = this.messages.slice(-20);
     return recent.map((m) => ({ role: m.role, content: m.content }));
   }
+
+  // ─── Send / Cancel ──────────────────────────────────────────────────────
 
   private async sendMessage(text: string): Promise<void> {
     if (!text.trim() || this.isStreaming) return;
@@ -410,13 +451,12 @@ export class AiAssistantWidget extends ReactWidget {
     this.scheduleUpdate();
 
     const context = await this.gatherContext();
-    // Store for context chips in render
     (this as any)._lastSketchName = context.sketchName || undefined;
     (this as any)._lastBoardName = context.boardName || undefined;
     const request: AiChatRequest = {
       sessionId: this.currentSessionId,
       userMessage: text,
-      history: this.buildHistory().slice(0, -1), // exclude the message we just pushed
+      history: this.buildHistory().slice(0, -1),
       context,
       provider: this.preferences['arduino.ai.provider'] as AiProviderType,
       apiKey: this.getApiKey(),
@@ -446,6 +486,8 @@ export class AiAssistantWidget extends ReactWidget {
     }
   }
 
+  // ─── Event handlers ─────────────────────────────────────────────────────
+
   private handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -453,9 +495,7 @@ export class AiAssistantWidget extends ReactWidget {
     }
   };
 
-  private handleInputChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ): void => {
+  private handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
     this.inputValue = e.target.value;
     this.scheduleUpdate();
   };
@@ -468,32 +508,8 @@ export class AiAssistantWidget extends ReactWidget {
     }
   };
 
-  private setInputRef = (el: HTMLTextAreaElement | null): void => {
-    this.inputRef = el;
-  };
-
-  private setMessagesEndRef = (el: HTMLDivElement | null): void => {
-    this.messagesEndRef = el;
-  };
-
-  private handleSuggestionClick = (text: string): void => {
-    this.inputValue = text;
-    void this.sendMessage(text);
-  };
-
-  private static readonly PROVIDER_MODELS: Record<string, string[]> = {
-    'github-models': ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o3-mini', 'DeepSeek-R1'],
-    'openai': ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'o3-mini', 'o4-mini'],
-    'anthropic': ['claude-sonnet-4-5-20250514', 'claude-haiku-4-5-20251001', 'claude-sonnet-4-20250514'],
-    'ollama': ['llama3.1', 'codellama', 'deepseek-coder-v2', 'qwen2.5-coder'],
-  };
-
-  private getModelsForProvider(prov: string): string[] {
-    return AiAssistantWidget.PROVIDER_MODELS[prov] || ['gpt-4o'];
-  }
-
   private handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    this.currentMode = e.target.value as 'agent' | 'ask' | 'plan';
+    this.currentMode = e.target.value as ChatMode;
     this.scheduleUpdate();
   };
 
@@ -510,13 +526,31 @@ export class AiAssistantWidget extends ReactWidget {
     this.scheduleUpdate();
   };
 
+  private handleSuggestionClick = (text: string): void => {
+    this.inputValue = text;
+    void this.sendMessage(text);
+  };
+
+  private setInputRef = (el: HTMLTextAreaElement | null): void => {
+    this.inputRef = el;
+  };
+
+  private setMessagesEndRef = (el: HTMLDivElement | null): void => {
+    this.messagesEndRef = el;
+  };
+
+  private getModelsForProvider(prov: string): string[] {
+    return PROVIDER_MODELS[prov] || ['gpt-4o'];
+  }
+
+  // ─── Render ─────────────────────────────────────────────────────────────
+
   protected render(): React.ReactNode {
-    console.log('[AiAssistant] render() called');
     try {
       return this.renderWidget();
     } catch (err) {
       return (
-        <div style={{ padding: '16px', color: '#f44', fontFamily: 'monospace', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+        <div style={{ padding: 16, color: '#f44', fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap' }}>
           {'AI Assistant render error:\n' + String(err)}
         </div>
       );
@@ -526,35 +560,19 @@ export class AiAssistantWidget extends ReactWidget {
   private renderWidget(): React.ReactNode {
     const noKey = !this.hasApiKey();
     const provider = this.preferences['arduino.ai.provider'];
-
-    // Gather chip info from last context (stored on send; approximate from sketch client)
-    const currentSketchName = (this as any)._lastSketchName as string | undefined;
-    const currentBoard = (this as any)._lastBoardName as string | undefined;
+    const currentModel = this.preferences['arduino.ai.model'] || 'gpt-4o';
+    const modeInfo = MODE_LABELS[this.currentMode];
+    const hasText = this.inputValue.trim().length > 0;
 
     const suggestions = [
       'Explain what this sketch does',
       'Fix any compile errors',
       'Add a button debounce function',
+      'Optimize memory usage',
     ];
 
     return (
       <div className="ai-assistant-widget">
-        {/* ── Header ── */}
-        <div className="ai-assistant-header">
-          <span className="ai-assistant-header-title">Arduino AI</span>
-          <div className="ai-assistant-header-actions">
-            <button
-              className="ai-assistant-icon-btn"
-              title="New chat"
-              onClick={this.handleClearChat}
-              disabled={this.isStreaming || this.messages.length === 0}
-            >
-              {/* pencil / new chat icon */}
-              ✏
-            </button>
-          </div>
-        </div>
-
         {/* ── Messages ── */}
         <div className="ai-assistant-messages">
           {this.messages.length === 0 && !this.isStreaming ? (
@@ -604,7 +622,7 @@ export class AiAssistantWidget extends ReactWidget {
                     <div className="ai-assistant-assistant-body">
                       {this.toolCallText && (
                         <div className="ai-assistant-tool-badge">
-                          ⚙ {this.toolCallText.replace(/^⚙️ \*Using tool: /, '').replace(/…\*$/, '')}
+                          ⚙ {this.toolCallText}
                         </div>
                       )}
                       {this.streamingText ? (
@@ -629,43 +647,18 @@ export class AiAssistantWidget extends ReactWidget {
         {/* ── No key warning ── */}
         {noKey && (
           <div className="ai-assistant-no-key">
-            No API key for <strong>{provider}</strong>. Open{' '}
-            <em>File → Preferences → Settings</em> and configure{' '}
-            <code>arduino.ai.*</code>.
+            No API key configured for <strong>{provider}</strong>.
+            Open <em>File → Preferences → Settings</em> → <strong>AI Assistant</strong> tab to add your key.
           </div>
         )}
 
-        {/* ── Context chips ── */}
-        {(currentSketchName || currentBoard) && (
-          <div className="ai-assistant-context-strip">
-            {currentSketchName && (
-              <span className="ai-assistant-context-chip" title={currentSketchName}>
-                📄 {currentSketchName}
-              </span>
-            )}
-            {currentBoard && (
-              <span className="ai-assistant-context-chip" title={currentBoard}>
-                🔌 {currentBoard}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* ── Input ── */}
+        {/* ── Input area ── */}
         <div className="ai-assistant-input-area">
           <div className="ai-assistant-input-box">
             <textarea
               ref={this.setInputRef}
               className="ai-assistant-input"
-              placeholder={
-                noKey
-                  ? 'Configure API key in settings first…'
-                  : this.currentMode === 'agent'
-                  ? 'Ask to write code, fix errors, install libraries…'
-                  : this.currentMode === 'ask'
-                  ? 'Ask a question about your code…'
-                  : 'Describe what you want to plan…'
-              }
+              placeholder={noKey ? 'Configure API key in Preferences → AI Assistant…' : modeInfo.placeholder}
               value={this.inputValue}
               onChange={this.handleInputChange}
               onKeyDown={this.handleKeyDown}
@@ -673,36 +666,56 @@ export class AiAssistantWidget extends ReactWidget {
               rows={2}
             />
             <div className="ai-assistant-input-toolbar">
-              <div className="ai-assistant-model-selector">
+              <div className="ai-assistant-toolbar-left">
+                {/* Mode selector */}
                 <select
                   className="ai-assistant-mode-select"
                   value={this.currentMode}
                   onChange={this.handleModeChange}
-                  title="Mode"
+                  title="Chat mode"
                 >
-                  <option value="agent">⚡ Agent</option>
-                  <option value="ask">💬 Ask</option>
-                  <option value="plan">📋 Plan</option>
+                  <option value="agent">{MODE_LABELS.agent.icon} Agent</option>
+                  <option value="ask">{MODE_LABELS.ask.icon} Ask</option>
+                  <option value="plan">{MODE_LABELS.plan.icon} Plan</option>
                 </select>
+
+                <span className="ai-assistant-toolbar-sep" />
+
+                {/* Model selector */}
                 <select
                   className="ai-assistant-model-select"
-                  value={this.preferences['arduino.ai.model'] || 'gpt-4o'}
+                  value={currentModel}
                   onChange={this.handleModelChange}
-                  title="Model"
+                  title="AI Model"
                 >
                   {this.getModelsForProvider(provider).map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
               </div>
-              <button
-                className={`ai-assistant-send-btn${this.isStreaming ? ' cancel' : ''}`}
-                onClick={this.handleSendClick}
-                disabled={noKey && !this.isStreaming}
-              >
-                {this.isStreaming ? '⏹ Stop' : 'Send'}
-              </button>
+
+              <div className="ai-assistant-toolbar-right">
+                <button
+                  className="ai-assistant-icon-btn"
+                  title="New chat"
+                  onClick={this.handleClearChat}
+                  disabled={this.isStreaming || this.messages.length === 0}
+                >
+                  <NewChatIcon />
+                </button>
+                <button
+                  className={`ai-assistant-send-btn${this.isStreaming ? ' cancel' : hasText ? ' has-text' : ''}`}
+                  onClick={this.handleSendClick}
+                  disabled={noKey && !this.isStreaming}
+                  title={this.isStreaming ? 'Stop generation' : 'Send message'}
+                >
+                  {this.isStreaming ? <StopIcon /> : <SendIcon />}
+                </button>
+              </div>
             </div>
+          </div>
+          <div className="ai-assistant-input-hint">
+            Enter ↵ send · Shift+Enter newline
           </div>
         </div>
       </div>

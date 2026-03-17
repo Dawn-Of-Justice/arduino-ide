@@ -1,59 +1,36 @@
-/* ── Outer container ─────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Arduino AI Assistant — VS Code Copilot-inspired theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root container ─────────────────────────────────────────────────────── */
 .ai-assistant-widget {
   display: flex;
   flex-direction: column;
-  /* Use absolute positioning so we fill the Lumino widget node regardless of
-     whether its parent uses explicit height or flex. Lumino always sets
-     position:absolute + top/left/right/bottom on widget nodes. */
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   overflow: hidden;
-  font-size: var(--theia-ui-font-size1);
+  font-family: var(--theia-ui-font-family);
+  font-size: 13px;
   color: var(--theia-foreground);
   background: var(--theia-sideBar-background, var(--theia-editor-background));
 }
 
-/* ── Panel header ────────────────────────────────────────────────────────── */
-.ai-assistant-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 10px;
-  border-bottom: 1px solid var(--theia-sideBarSectionHeader-border, var(--theia-contrastBorder, rgba(255,255,255,0.06)));
-  flex-shrink: 0;
-  min-height: 34px;
-}
-
-.ai-assistant-header-title {
-  font-size: 0.78em;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--theia-sideBarTitle-foreground, var(--theia-foreground));
-  opacity: 0.8;
-}
-
-.ai-assistant-header-actions {
-  display: flex;
-  gap: 4px;
-}
+/* ── (Header removed — Theia view title handles it) ────────────────────── */
 
 .ai-assistant-icon-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 3px 5px;
-  border-radius: 3px;
+  padding: 4px 6px;
+  border-radius: 4px;
   color: var(--theia-icon-foreground, var(--theia-foreground));
-  opacity: 0.7;
+  opacity: 0.65;
   font-size: 14px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.1s, opacity 0.1s;
 }
 
 .ai-assistant-icon-btn:hover {
@@ -62,11 +39,11 @@
 }
 
 .ai-assistant-icon-btn:disabled {
-  opacity: 0.3;
+  opacity: 0.25;
   cursor: default;
 }
 
-/* ── Messages scroll area ────────────────────────────────────────────────── */
+/* ── Messages scroll area ───────────────────────────────────────────────── */
 .ai-assistant-messages {
   flex: 1;
   overflow-y: auto;
@@ -75,114 +52,109 @@
   flex-direction: column;
 }
 
-/* ── Empty / welcome state ───────────────────────────────────────────────── */
+/* ── Empty / Welcome state ──────────────────────────────────────────────── */
 .ai-assistant-empty {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 24px 20px;
+  gap: 8px;
+  padding: 48px 24px 24px;
   text-align: center;
-  color: var(--theia-descriptionForeground);
 }
 
 .ai-assistant-empty-icon {
-  font-size: 32px;
-  line-height: 1;
-  margin-bottom: 4px;
-  opacity: 0.85;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--theia-button-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--theia-button-foreground);
 }
 
 .ai-assistant-empty-title {
-  font-size: 0.95em;
+  font-size: 14px;
   font-weight: 600;
   color: var(--theia-foreground);
-  margin-bottom: 2px;
 }
 
 .ai-assistant-empty-subtitle {
-  font-size: 0.82em;
-  opacity: 0.7;
-  max-width: 200px;
+  font-size: 12px;
+  color: var(--theia-descriptionForeground);
+  max-width: 240px;
   line-height: 1.5;
 }
 
 .ai-assistant-suggestions {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   width: 100%;
-  max-width: 240px;
-  margin-top: 8px;
+  max-width: 260px;
+  margin-top: 12px;
 }
 
 .ai-assistant-suggestion {
   background: var(--theia-input-background);
   border: 1px solid var(--theia-input-border, rgba(255,255,255,0.1));
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.82em;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
   color: var(--theia-foreground);
   cursor: pointer;
   text-align: left;
   line-height: 1.4;
-  transition: background 0.1s;
+  transition: background 0.1s, border-color 0.1s;
 }
 
 .ai-assistant-suggestion:hover {
   background: var(--theia-list-hoverBackground);
+  border-color: var(--theia-focusBorder);
 }
 
-/* ── Individual messages ─────────────────────────────────────────────────── */
+/* ── Messages ───────────────────────────────────────────────────────────── */
 .ai-assistant-message {
-  padding: 8px 12px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  word-break: break-word;
 }
 
 .ai-assistant-message.user {
   align-items: flex-end;
-  padding-left: 32px;
+  padding-left: 40px;
 }
 
 .ai-assistant-message.assistant {
   align-items: flex-start;
-  border-bottom: 1px solid var(--theia-sideBarSectionHeader-border, rgba(255,255,255,0.05));
 }
 
-.ai-assistant-message.assistant:last-child {
-  border-bottom: none;
-}
-
-/* User bubble — small pill like VS Code */
+/* User bubble — right-aligned pill */
 .ai-assistant-user-bubble {
-  background: var(--theia-button-secondaryBackground, rgba(255,255,255,0.1));
+  background: var(--theia-button-secondaryBackground, rgba(255,255,255,0.08));
   color: var(--theia-foreground);
-  border: 1px solid var(--theia-input-border, rgba(255,255,255,0.12));
-  border-radius: 10px;
-  padding: 6px 12px;
-  font-size: 0.9em;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
   line-height: 1.5;
   white-space: pre-wrap;
-  max-width: 100%;
+  max-width: 90%;
   word-break: break-word;
 }
 
-/* Assistant row — icon + text side by side */
+/* Assistant row — avatar + content */
 .ai-assistant-assistant-row {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
 }
 
 .ai-assistant-avatar {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--theia-button-background);
   color: var(--theia-button-foreground);
@@ -190,40 +162,41 @@
   align-items: center;
   justify-content: center;
   font-size: 11px;
+  font-weight: 700;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .ai-assistant-assistant-body {
   flex: 1;
   min-width: 0;
-  font-size: 0.9em;
+  font-size: 13px;
   line-height: 1.6;
   color: var(--theia-foreground);
 }
 
-/* ── Tool call indicator ─────────────────────────────────────────────────── */
+/* ── Tool call badge ────────────────────────────────────────────────────── */
 .ai-assistant-tool-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.78em;
+  font-size: 11px;
   color: var(--theia-descriptionForeground);
-  background: var(--theia-textBlockQuote-background, rgba(255,255,255,0.06));
+  background: var(--theia-textBlockQuote-background, rgba(255,255,255,0.05));
   border: 1px solid var(--theia-input-border, rgba(255,255,255,0.08));
   border-radius: 20px;
-  padding: 2px 8px;
-  margin-bottom: 4px;
+  padding: 2px 10px;
+  margin-bottom: 6px;
   font-style: italic;
 }
 
-/* ── Blinking cursor ─────────────────────────────────────────────────────── */
+/* ── Streaming cursor ───────────────────────────────────────────────────── */
 .ai-assistant-streaming-cursor {
   display: inline-block;
   width: 2px;
-  height: 13px;
+  height: 14px;
   background: var(--theia-foreground);
-  margin-left: 1px;
+  margin-left: 2px;
   vertical-align: middle;
   animation: ai-cursor-blink 1s step-end infinite;
   opacity: 0.7;
@@ -235,9 +208,9 @@
   50% { opacity: 0; }
 }
 
-/* ── Markdown content ────────────────────────────────────────────────────── */
+/* ── Markdown content ───────────────────────────────────────────────────── */
 .ai-assistant-markdown p {
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
 }
 
 .ai-assistant-markdown p:last-child {
@@ -247,77 +220,76 @@
 .ai-assistant-markdown h1,
 .ai-assistant-markdown h2,
 .ai-assistant-markdown h3 {
-  margin: 8px 0 4px 0;
-  font-size: 0.95em;
+  margin: 12px 0 6px 0;
   font-weight: 600;
 }
 
+.ai-assistant-markdown h1 { font-size: 1.15em; }
+.ai-assistant-markdown h2 { font-size: 1.05em; }
+.ai-assistant-markdown h3 { font-size: 1em; }
+
 .ai-assistant-markdown ul,
 .ai-assistant-markdown ol {
-  margin: 4px 0;
-  padding-left: 18px;
+  margin: 4px 0 8px 0;
+  padding-left: 20px;
 }
 
 .ai-assistant-markdown li {
-  margin: 2px 0;
+  margin: 3px 0;
 }
 
 .ai-assistant-markdown code {
   font-family: var(--theia-code-font-family);
-  font-size: 0.88em;
-  background: var(--theia-textBlockQuote-background, rgba(255,255,255,0.08));
+  font-size: 0.9em;
+  background: var(--theia-textBlockQuote-background, rgba(255,255,255,0.07));
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: 4px;
+  border: 1px solid var(--theia-input-border, rgba(255,255,255,0.06));
 }
 
 .ai-assistant-markdown pre {
-  background: var(--theia-textBlockQuote-background, rgba(0,0,0,0.2));
+  background: rgba(0,0,0,0.25);
   border: 1px solid var(--theia-input-border, rgba(255,255,255,0.08));
-  border-radius: 5px;
-  padding: 10px 12px;
+  border-radius: 6px;
+  padding: 12px 14px;
   overflow-x: auto;
-  margin: 6px 0;
+  margin: 8px 0;
+  position: relative;
 }
 
 .ai-assistant-markdown pre code {
   background: none;
+  border: none;
   padding: 0;
-  font-size: 0.87em;
+  font-size: 12px;
   line-height: 1.5;
 }
 
 .ai-assistant-markdown blockquote {
   border-left: 3px solid var(--theia-button-background);
-  margin: 4px 0;
-  padding: 2px 10px;
+  margin: 6px 0;
+  padding: 4px 12px;
   color: var(--theia-descriptionForeground);
 }
 
-/* ── No API key warning ──────────────────────────────────────────────────── */
+/* ── No API key warning ─────────────────────────────────────────────────── */
 .ai-assistant-no-key {
-  margin: 8px 10px;
-  padding: 10px 12px;
-  background: var(--theia-inputValidation-warningBackground, rgba(255, 180, 0, 0.12));
+  margin: 0 12px 8px;
+  padding: 10px 14px;
+  background: var(--theia-inputValidation-warningBackground, rgba(255, 180, 0, 0.1));
   color: var(--theia-inputValidation-warningForeground, var(--theia-foreground));
-  border: 1px solid var(--theia-inputValidation-warningBorder, rgba(255,180,0,0.4));
-  border-radius: 5px;
-  font-size: 0.82em;
+  border: 1px solid var(--theia-inputValidation-warningBorder, rgba(255,180,0,0.3));
+  border-radius: 6px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
-.ai-assistant-no-key a {
-  color: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-/* ── Context strip ───────────────────────────────────────────────────────── */
+/* ── Context strip ──────────────────────────────────────────────────────── */
 .ai-assistant-context-strip {
   display: flex;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   flex-wrap: wrap;
-  border-top: 1px solid var(--theia-sideBarSectionHeader-border, rgba(255,255,255,0.06));
   flex-shrink: 0;
 }
 
@@ -325,10 +297,10 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.75em;
-  padding: 2px 7px;
+  font-size: 11px;
+  padding: 2px 8px;
   border-radius: 10px;
-  background: var(--theia-badge-background, rgba(255,255,255,0.08));
+  background: var(--theia-badge-background, rgba(255,255,255,0.07));
   color: var(--theia-descriptionForeground);
   border: 1px solid var(--theia-input-border, rgba(255,255,255,0.08));
   white-space: nowrap;
@@ -337,9 +309,11 @@
   text-overflow: ellipsis;
 }
 
-/* ── Input area ──────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Input area — VS Code Copilot style
+   ═══════════════════════════════════════════════════════════════════════════ */
 .ai-assistant-input-area {
-  padding: 8px 10px 10px;
+  padding: 0 12px 12px;
   flex-shrink: 0;
 }
 
@@ -363,117 +337,167 @@
   background: transparent;
   color: var(--theia-input-foreground);
   border: none;
-  padding: 8px 10px 4px;
+  padding: 10px 12px 4px;
   font-family: var(--theia-ui-font-family);
-  font-size: var(--theia-ui-font-size1);
+  font-size: 13px;
   outline: none;
-  min-height: 36px;
-  max-height: 140px;
+  min-height: 40px;
+  max-height: 150px;
   line-height: 1.5;
   overflow-y: auto;
 }
 
 .ai-assistant-input::placeholder {
   color: var(--theia-input-placeholderForeground);
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
+/* ── Input toolbar (mode/model/send) ────────────────────────────────────── */
 .ai-assistant-input-toolbar {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  padding: 3px 6px;
-  gap: 4px;
+  padding: 8px 10px 10px;
+  gap: 10px;
+  border-top: 1px solid var(--theia-input-border, rgba(255,255,255,0.06));
 }
 
-.ai-assistant-send-btn {
-  background: var(--theia-button-background);
-  color: var(--theia-button-foreground);
-  border: none;
-  border-radius: 4px;
-  padding: 3px 10px;
-  cursor: pointer;
-  font-size: 0.8em;
-  height: 24px;
+/* Left side: mode + model selectors */
+.ai-assistant-toolbar-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Right side: new chat + send button */
+.ai-assistant-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
-  font-weight: 500;
 }
 
-.ai-assistant-send-btn:hover:not(:disabled) {
-  background: var(--theia-button-hoverBackground);
-}
-
-.ai-assistant-send-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.ai-assistant-send-btn.cancel {
-  background: var(--theia-statusBarItem-errorBackground, #a1260d);
-}
-
-.ai-assistant-input-hint {
-  font-size: 0.72em;
-  color: var(--theia-descriptionForeground);
-  opacity: 0.55;
-  margin-right: auto;
-  user-select: none;
-}
-
-/* ── In-chat mode + model selector ─────────────────────────────────────── */
-.ai-assistant-model-selector {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-right: auto;
-}
-
+/* ── Dropdown buttons (mode & model) ────────────────────────────────────── */
 .ai-assistant-mode-select,
 .ai-assistant-model-select {
   background: transparent;
   color: var(--theia-descriptionForeground);
-  border: 1px solid var(--theia-input-border, rgba(255,255,255,0.1));
-  border-radius: 4px;
-  padding: 1px 4px;
-  font-size: 0.72em;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 3px 20px 3px 8px;
+  font-size: 11px;
   font-family: var(--theia-ui-font-family);
   cursor: pointer;
   outline: none;
-  height: 22px;
+  height: 26px;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0l4 4 4-4z' fill='%23888'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 4px center;
-  padding-right: 14px;
+  background-position: right 6px center;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ai-assistant-mode-select {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--theia-foreground);
-  max-width: 100px;
+  max-width: 120px;
 }
 
 .ai-assistant-model-select {
   max-width: 160px;
+  font-weight: 400;
 }
 
 .ai-assistant-mode-select:hover,
 .ai-assistant-model-select:hover {
-  border-color: var(--theia-focusBorder);
+  background-color: var(--theia-toolbar-hoverBackground, rgba(255,255,255,0.08));
+  border-color: var(--theia-input-border, rgba(255,255,255,0.12));
   color: var(--theia-foreground);
 }
 
 .ai-assistant-mode-select:focus,
 .ai-assistant-model-select:focus {
   border-color: var(--theia-focusBorder);
+  color: var(--theia-foreground);
 }
 
 .ai-assistant-mode-select option,
 .ai-assistant-model-select option {
   background: var(--theia-dropdown-background, var(--theia-input-background));
   color: var(--theia-dropdown-foreground, var(--theia-foreground));
+}
+
+/* ── Separator line ─────────────────────────────────────────────────────── */
+.ai-assistant-toolbar-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--theia-descriptionForeground);
+  opacity: 0.2;
+  flex-shrink: 0;
+}
+
+/* ── Send / Stop button ─────────────────────────────────────────────────── */
+.ai-assistant-send-btn {
+  background: none;
+  color: var(--theia-descriptionForeground);
+  border: none;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s;
+  padding: 0;
+}
+
+.ai-assistant-send-btn:hover:not(:disabled) {
+  background: var(--theia-toolbar-hoverBackground, rgba(255,255,255,0.1));
+  color: var(--theia-foreground);
+}
+
+.ai-assistant-send-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.ai-assistant-send-btn.has-text {
+  background: var(--theia-button-background);
+  color: var(--theia-button-foreground);
+}
+
+.ai-assistant-send-btn.has-text:hover:not(:disabled) {
+  background: var(--theia-button-hoverBackground);
+}
+
+.ai-assistant-send-btn.cancel {
+  background: var(--theia-statusBarItem-errorBackground, #a1260d);
+  color: #fff;
+}
+
+.ai-assistant-send-btn.cancel:hover {
+  opacity: 0.9;
+}
+
+/* Send icon SVG */
+.ai-assistant-send-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ── Hint text ──────────────────────────────────────────────────────────── */
+.ai-assistant-input-hint {
+  font-size: 11px;
+  color: var(--theia-descriptionForeground);
+  opacity: 0.45;
+  padding: 0 12px 6px;
+  user-select: none;
 }
